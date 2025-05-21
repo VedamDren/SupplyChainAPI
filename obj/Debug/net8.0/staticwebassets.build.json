@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "tQCwIfXROIEzrBj6ryJw2FqOIGz58uLTeY2LP1x8cRo=",
+  "Source": "SupplyChainAPI",
+  "BasePath": "_content/SupplyChainAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

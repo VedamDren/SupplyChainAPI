@@ -1,92 +1,75 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using SupplyChainAPI;
 using SupplyChainData;
-using AutoMapper;
-using NeedlRecuperatorWebApi;
+using SupplyChainAPI.Mappings;
 using System.Globalization;
 
+var builder = WebApplication.CreateBuilder(args);
 
-namespace NeedlRecuperatorCore
+// Настройка локализации
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
+// Настройка подключения к БД
+builder.Services.AddDbContext<SupplyChainContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Регистрация AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+// Регистрация сервисов и репозиториев
+builder.Services.AddControllers();
+
+// Настройка Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
 {
-    public class Program
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+        Title = "Supply Chain API",
+        Version = "v1",
+        Description = "API для автоматизации планирования цепочек поставок"
+    });
+});
 
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+var app = builder.Build();
 
-            //Настройка подключения к БД
-            builder.Services.AddDbContext<SupplyChainContext>(options => options.UseSqlite("Data Source = SupplyChainContext.db"));
+// Конфигурация конвейера запросов
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Supply Chain API v1");
+        c.RoutePrefix = "swagger";
+    });
+}
+else
+{
+    app.UseExceptionHandler("/error");
+    app.UseHsts();
+}
 
-            //Сервис Авторизации
-            /*builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options => options.LoginPath = "/Auth");
-            builder.Services.AddAuthorization();*/
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseAuthorization();
 
-            //Работа с сессиями
-            builder.Services.AddDistributedMemoryCache();  // Для хранения данных сессии в памяти
-            builder.Services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(30);  // Установите время жизни сессии (например, 30 минут)
-                options.Cookie.HttpOnly = true;  // Настройка безопасности для куки
-                options.Cookie.IsEssential = true;  // Убедитесь, что сессия обязательна
-            });
+app.MapControllers();
 
-            //AutoMapper configuration
-            var mapper = new MapperConfiguration(mc => mc.AddProfile<MapperProfile>())
-                .CreateMapper();
-
-            builder.Services.AddSingleton(mapper);
-
-            /* builder.Services.AddSingleton<SingletonService>();
-             builder.Services.AddScoped<ScopedService>();
-             builder.Services.AddTransient<TransientService>();
-             builder.Services.AddTransient<Transient2Service>();*/
-
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
-            }
-            app.UseSession();
-
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-
-            app.UseAuthorization();
-
-
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
-
-            app.Run();
-        }
+// Применение миграций при запуске
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<SupplyChainContext>();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Произошла ошибка при применении миграций");
     }
 }
+
+app.Run();

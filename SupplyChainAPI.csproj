@@ -25,4 +25,10 @@
     <ProjectReference Include="..\SupplyChainData\SupplyChainData.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+    <Folder Include="Repositories\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

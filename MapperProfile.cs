@@ -1,26 +1,34 @@
 ﻿using AutoMapper;
-using NeedlRecuperatorData;
-using System.ComponentModel.Design;
-using NeedlRecuperatorWebApi.Models.User;
+using SupplyChainData;
+using SupplyChainAPI.Models;
+using SupplyChainAPI.Models.DTO;
 
-namespace NeedlRecuperatorWebApi
+namespace SupplyChainAPI.Mappings
 {
-    public class MapperProfile : Profile
+    public class MappingProfile : Profile
     {
-        public MapperProfile()
+        public MappingProfile()
         {
-            CreateMap<UserAddDTO, User>();
+            // Material mappings
+            CreateMap<Material, MaterialDto>()
+                .ForMember(dest => dest.Type,
+                    opt => opt.MapFrom(src => src.Type.ToString()));
 
-            CreateMap<User, UserGetDTO>()
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
-            /*Для объединения полей
-             .ForMember(dest => dest.[название для обеъединения полей], opt => opt.MapFrom(src => $"{src.[Название поля] src.[Название поля] src.[Название поля]"))
-              Для игнорирования полей
-             .ForMember(dest => dest.[не мапируемое поле], opt => opt.Ignore())*/
+            CreateMap<MaterialCreateDto, Material>()
+                .ForMember(dest => dest.Type,
+                    opt => opt.MapFrom(src => Enum.Parse<MaterialType>(src.Type)));
 
-            CreateMap<VariantAddDTO, Variant>();
+            CreateMap<MaterialUpdateDto, Material>()
+                .ForMember(dest => dest.Type,
+                    opt => opt.MapFrom(src =>
+                        !string.IsNullOrEmpty(src.Type)
+                            ? Enum.Parse<MaterialType>(src.Type)
+                            : MaterialType.RawMaterial))
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-            CreateMap<Variant, VariantGetDTO>();
+            CreateMap<SalesPlan, SalesPlanResponseDto>()
+                .ForMember(dest => dest.SubdivisionName, opt => opt.MapFrom(src => src.Subdivision.Name))
+                .ForMember(dest => dest.MaterialName,opt => opt.MapFrom(src => src.Material.Name));
         }
     }
 }

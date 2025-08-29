@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
 using SupplyChainData;
-using SupplyChainAPI.Models;
+using SupplyChainAPI.Models.MaterialDTO;
 using SupplyChainAPI.Models.DTO;
+using SupplyChainAPI.Models.ProductionPlanDTO;
 
 namespace SupplyChainAPI.Mappings
 {
@@ -26,9 +27,22 @@ namespace SupplyChainAPI.Mappings
                             : MaterialType.RawMaterial))
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
+            // SalesPlan mappings
             CreateMap<SalesPlan, SalesPlanResponseDto>()
                 .ForMember(dest => dest.SubdivisionName, opt => opt.MapFrom(src => src.Subdivision.Name))
                 .ForMember(dest => dest.MaterialName,opt => opt.MapFrom(src => src.Material.Name));
+
+            // ProductionPlan mappings
+            CreateMap<ProductionPlan, ProductionPlanResponseDto>()
+                .ForMember(dest => dest.SubdivisionName,
+                    opt => opt.MapFrom(src => src.Subdivision.Name))
+                .ForMember(dest => dest.MaterialName,
+                    opt => opt.MapFrom(src => src.Material.Name));
+
+            CreateMap<ProductionPlanCreateDto, ProductionPlan>();
+
+            CreateMap<ProductionPlanUpdateDto, ProductionPlan>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

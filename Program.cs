@@ -11,7 +11,7 @@ CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 // Настройка подключения к БД
 builder.Services.AddDbContext<SupplyChainContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite("Data Source = SupplyChain.db"));
 
 // Регистрация AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));

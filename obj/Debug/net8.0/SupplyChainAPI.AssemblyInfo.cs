@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SupplyChainAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e0ac549cc4f4c29397065be0489a220683005f61")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2a0fd6846604ab97065caf329b29d0b8ef85fed8")]
 [assembly: System.Reflection.AssemblyProductAttribute("SupplyChainAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SupplyChainAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

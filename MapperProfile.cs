@@ -6,6 +6,9 @@ using SupplyChainAPI.Models.ProductionPlan;
 using SupplyChainAPI.Models.RawMaterialPurchaseDTO;
 using SupplyChainAPI.Models.RawMaterialWriteOffDTO;
 using SupplyChainAPI.Models.InventoryPlan;
+using SupplyChainAPI.Models.Regulation;
+using SupplyChainAPI.Models.SalesPlanDTO;
+using SupplyChainAPI.Models.SubdivisionDTO;
 
 namespace SupplyChainAPI.Mappings
 {
@@ -93,6 +96,52 @@ namespace SupplyChainAPI.Mappings
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
             #endregion План запасов
 
+            #region Нормативы
+            // Regulation mappings
+            CreateMap<Regulation, RegulationDto>()
+                .ForMember(dest => dest.SubdivisionName,
+                    opt => opt.MapFrom(src => src.Subdivision.Name))
+                .ForMember(dest => dest.MaterialName,
+                    opt => opt.MapFrom(src => src.Material.Name));
+
+            CreateMap<RegulationCreateDto, Regulation>();
+
+            CreateMap<RegulationUpdateDto, Regulation>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            #endregion Нормативы
+
+            #region План продаж
+            // SalesPlan mappings
+            CreateMap<SalesPlan, SalesPlanResponseDto>()
+                .ForMember(dest => dest.SubdivisionName,
+                    opt => opt.MapFrom(src => src.Subdivision.Name))
+                .ForMember(dest => dest.MaterialName,
+                    opt => opt.MapFrom(src => src.Material.Name));
+
+            CreateMap<SalesPlanCreateDto, SalesPlan>();
+
+            CreateMap<SalesPlanUpdateDto, SalesPlan>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            #endregion План продаж
+
+            #region Подразделения
+            // Subdivision mappings
+            CreateMap<Subdivision, SubdivisionDto>()
+                .ForMember(dest => dest.Type,
+                    opt => opt.MapFrom(src => src.Type.ToString()));
+
+            CreateMap<SubdivisionCreateDto, Subdivision>()
+                .ForMember(dest => dest.Type,
+                    opt => opt.MapFrom(src => Enum.Parse<SubdivisionType>(src.Type)));
+
+            CreateMap<SubdivisionUpdateDto, Subdivision>()
+                .ForMember(dest => dest.Type,
+                    opt => opt.MapFrom(src =>
+                        !string.IsNullOrEmpty(src.Type)
+                            ? Enum.Parse<SubdivisionType>(src.Type)
+                            : SubdivisionType.Trading))
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            #endregion Подразделения
 
         }
     }

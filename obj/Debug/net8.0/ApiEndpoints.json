@@ -928,5 +928,332 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.RegulationsController",
+    "Method": "CreateRegulation",
+    "RelativePath": "api/Regulations",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "regulationDto",
+        "Type": "SupplyChainAPI.Models.Regulation.RegulationCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SupplyChainAPI.Models.Regulation.RegulationDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.RegulationsController",
+    "Method": "GetRegulation",
+    "RelativePath": "api/Regulations/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SupplyChainAPI.Models.Regulation.RegulationDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.RegulationsController",
+    "Method": "UpdateRegulation",
+    "RelativePath": "api/Regulations/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "regulationDto",
+        "Type": "SupplyChainAPI.Models.Regulation.RegulationUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.RegulationsController",
+    "Method": "DeleteRegulation",
+    "RelativePath": "api/Regulations/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.RegulationsController",
+    "Method": "GetAllRegulations",
+    "RelativePath": "api/Regulations/getAll",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[SupplyChainAPI.Models.Regulation.RegulationDto, SupplyChainAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.SalesPlansController",
+    "Method": "CreateSalesPlan",
+    "RelativePath": "api/SalesPlans",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "salesPlanCreateDto",
+        "Type": "SalesPlanCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SupplyChainAPI.Models.DTO.SalesPlanResponseDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.SalesPlansController",
+    "Method": "GetSalesPlan",
+    "RelativePath": "api/SalesPlans/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SupplyChainAPI.Models.DTO.SalesPlanResponseDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.SalesPlansController",
+    "Method": "UpdateSalesPlan",
+    "RelativePath": "api/SalesPlans/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "salesPlanUpdateDto",
+        "Type": "SupplyChainAPI.Models.SalesPlanDTO.SalesPlanUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.SalesPlansController",
+    "Method": "DeleteSalesPlan",
+    "RelativePath": "api/SalesPlans/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.SalesPlansController",
+    "Method": "GetAllSalesPlans",
+    "RelativePath": "api/SalesPlans/getAll",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[SupplyChainAPI.Models.DTO.SalesPlanResponseDto, SupplyChainAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.SubdivisionsController",
+    "Method": "CreateSubdivision",
+    "RelativePath": "api/Subdivisions",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "subdivisionCreateDto",
+        "Type": "SupplyChainAPI.Models.SubdivisionDTO.SubdivisionCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SupplyChainAPI.Models.SubdivisionDTO.SubdivisionDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.SubdivisionsController",
+    "Method": "GetSubdivision",
+    "RelativePath": "api/Subdivisions/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SupplyChainAPI.Models.SubdivisionDTO.SubdivisionDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.SubdivisionsController",
+    "Method": "UpdateSubdivision",
+    "RelativePath": "api/Subdivisions/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "subdivisionUpdateDto",
+        "Type": "SupplyChainAPI.Models.SubdivisionDTO.SubdivisionUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.SubdivisionsController",
+    "Method": "DeleteSubdivision",
+    "RelativePath": "api/Subdivisions/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.SubdivisionsController",
+    "Method": "GetAllSubdivisions",
+    "RelativePath": "api/Subdivisions/getAll",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[SupplyChainAPI.Models.SubdivisionDTO.SubdivisionDto, SupplyChainAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   }
 ]

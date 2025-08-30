@@ -1,18 +1,18 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SupplyChainAPI.Models.ProductionPlanDTO
+namespace SupplyChainAPI.Models.RawMaterialPurchaseDTO
 {
-    public class ProductionPlanCreateDto
+    public class RawMaterialPurchaseCreateDto
     {
         [Required]
         public int SubdivisionId { get; set; }
 
         [Required]
-        public int MaterialId { get; set; }
+        public int RawMaterialId { get; set; }
 
         [Required]
-        public DateTime Date { get; set; }
+        public DateTime PurchaseDate { get; set; }
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than 0")]

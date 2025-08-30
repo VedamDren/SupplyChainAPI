@@ -1,4 +1,6 @@
-﻿namespace SupplyChainAPI.Models.ProductionPlanDTO
+﻿using System;
+
+namespace SupplyChainAPI.Models.ProductionPlan
 {
     public class ProductionPlanResponseDto
     {

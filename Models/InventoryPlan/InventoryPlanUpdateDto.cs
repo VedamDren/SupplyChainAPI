@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SupplyChainAPI.Models.ProductionPlanDTO
+namespace SupplyChainAPI.Models.InventoryPlan
 {
-    public class ProductionPlanUpdateDto
+    public class InventoryPlanUpdateDto
     {
         public int? SubdivisionId { get; set; }
 

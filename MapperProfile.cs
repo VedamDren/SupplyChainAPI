@@ -9,6 +9,9 @@ using SupplyChainAPI.Models.InventoryPlan;
 using SupplyChainAPI.Models.Regulation;
 using SupplyChainAPI.Models.SalesPlanDTO;
 using SupplyChainAPI.Models.SubdivisionDTO;
+using SupplyChainAPI.Models.SupplySourceDTO;
+using SupplyChainAPI.Models.TechnologicalCardDTO;
+using SupplyChainAPI.Models.TransferPlanDTO;
 
 namespace SupplyChainAPI.Mappings
 {
@@ -142,6 +145,54 @@ namespace SupplyChainAPI.Mappings
                             : SubdivisionType.Trading))
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
             #endregion Подразделения
+
+            #region Источники поставок
+            // SupplySource mappings
+            CreateMap<SupplySource, SupplySourceDto>()
+                .ForMember(dest => dest.SourceSubdivisionName,
+                    opt => opt.MapFrom(src => src.SourceSubdivision.Name))
+                .ForMember(dest => dest.DestinationSubdivisionName,
+                    opt => opt.MapFrom(src => src.DestinationSubdivision.Name))
+                .ForMember(dest => dest.MaterialName,
+                    opt => opt.MapFrom(src => src.Material.Name));
+
+            CreateMap<SupplySourceCreateDto, SupplySource>();
+
+            CreateMap<SupplySourceUpdateDto, SupplySource>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            #endregion Источники поставок
+
+            #region Технологические карты
+            // TechnologicalCard mappings
+            CreateMap<TechnologicalCard, TechnologicalCardDto>()
+                .ForMember(dest => dest.SubdivisionName,
+                    opt => opt.MapFrom(src => src.Subdivision.Name))
+                .ForMember(dest => dest.FinishedProductName,
+                    opt => opt.MapFrom(src => src.FinishedProduct.Name))
+                .ForMember(dest => dest.RawMaterialName,
+                    opt => opt.MapFrom(src => src.RawMaterial.Name));
+
+            CreateMap<TechnologicalCardCreateDto, TechnologicalCard>();
+
+            CreateMap<TechnologicalCardUpdateDto, TechnologicalCard>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            #endregion Технологические карты
+
+            #region План перемещений
+            // TransferPlan mappings
+            CreateMap<TransferPlan, TransferPlanDto>()
+                .ForMember(dest => dest.SourceSubdivisionName,
+                    opt => opt.MapFrom(src => src.SourceSubdivision.Name))
+                .ForMember(dest => dest.DestinationSubdivisionName,
+                    opt => opt.MapFrom(src => src.DestinationSubdivision.Name))
+                .ForMember(dest => dest.MaterialName,
+                    opt => opt.MapFrom(src => src.Material.Name));
+
+            CreateMap<TransferPlanCreateDto, TransferPlan>();
+
+            CreateMap<TransferPlanUpdateDto, TransferPlan>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            #endregion План перемещений
 
         }
     }

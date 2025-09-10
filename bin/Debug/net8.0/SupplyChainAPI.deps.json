@@ -14,6 +14,7 @@
           "Microsoft.EntityFrameworkCore.Sqlite": "8.0.10",
           "Microsoft.EntityFrameworkCore.Tools": "8.0.10",
           "SupplyChainData": "1.0.0",
+          "SupplyChaunMathLib": "1.0.0",
           "Swashbuckle.AspNetCore": "6.4.0"
         },
         "runtime": {
@@ -738,6 +739,14 @@
             "fileVersion": "1.0.0.0"
           }
         }
+      },
+      "SupplyChaunMathLib/1.0.0": {
+        "runtime": {
+          "SupplyChaunMathLib.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
       }
     }
   },
@@ -1112,6 +1121,11 @@
       "hashPath": "system.threading.channels.6.0.0.nupkg.sha512"
     },
     "SupplyChainData/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SupplyChaunMathLib/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

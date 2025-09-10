@@ -1,5 +1,109 @@
 [
   {
+    "ContainingType": "SupplyChainAPI.Controllers.CalculationsController",
+    "Method": "CalculateInventoryPlan",
+    "RelativePath": "api/Calculations/Inventory",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SupplyChainAPI.Models.InventoryCalculation.InventoryCalculationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SupplyChainAPI.Models.InventoryCalculation.InventoryCalculationResult",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.CalculationsController",
+    "Method": "CalculateProductionPlan",
+    "RelativePath": "api/Calculations/Production",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SupplyChainAPI.Models.ProductionCalculation.ProductionCalculationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SupplyChainAPI.Models.ProductionCalculation.ProductionCalculationResult",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.CalculationsController",
+    "Method": "CalculateRawMaterialPlan",
+    "RelativePath": "api/Calculations/RawMaterial",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SupplyChainAPI.Models.RawMaterialCalculation.RawMaterialCalculationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SupplyChainAPI.Models.RawMaterialCalculation.RawMaterialCalculationResult",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SupplyChainAPI.Controllers.CalculationsController",
+    "Method": "CalculateTransferPlan",
+    "RelativePath": "api/Calculations/Transfer",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SupplyChainAPI.Models.TransferCalculation.TransferCalculationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SupplyChainAPI.Models.TransferCalculation.TransferCalculationResult",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "SupplyChainAPI.Controllers.InventoryPlansController",
     "Method": "GetInventoryPlans",
     "RelativePath": "api/InventoryPlans",

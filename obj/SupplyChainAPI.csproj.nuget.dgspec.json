@@ -31,6 +31,9 @@
             "projectReferences": {
               "E:\\Производственная практика\\SupplyChainAPI\\SupplyChainData\\SupplyChainData.csproj": {
                 "projectPath": "E:\\Производственная практика\\SupplyChainAPI\\SupplyChainData\\SupplyChainData.csproj"
+              },
+              "E:\\Производственная практика\\SupplyChainAPI\\SupplyChaunMathLib\\SupplyChaunMathLib.csproj": {
+                "projectPath": "E:\\Производственная практика\\SupplyChainAPI\\SupplyChaunMathLib\\SupplyChaunMathLib.csproj"
               }
             }
           }
@@ -191,6 +194,21 @@
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
         }
+      }
+    },
+    "E:\\Производственная практика\\SupplyChainAPI\\SupplyChaunMathLib\\SupplyChaunMathLib.csproj": {
+      "restore": {
+        "projectUniqueName": "E:\\Производственная практика\\SupplyChainAPI\\SupplyChaunMathLib\\SupplyChaunMathLib.csproj",
+        "projectName": "SupplyChaunMathLib",
+        "projectPath": "E:\\Производственная практика\\SupplyChainAPI\\SupplyChaunMathLib\\SupplyChaunMathLib.csproj",
+        "frameworks": {
+          "net472": {
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net472": {}
       }
     }
   }

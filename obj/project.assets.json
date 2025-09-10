@@ -1101,6 +1101,15 @@
         "runtime": {
           "bin/placeholder/SupplyChainData.dll": {}
         }
+      },
+      "SupplyChaunMathLib/1.0.0": {
+        "type": "project",
+        "compile": {
+          "bin/placeholder/SupplyChaunMathLib.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SupplyChaunMathLib.dll": {}
+        }
       }
     }
   },
@@ -2878,6 +2887,11 @@
       "type": "project",
       "path": "../SupplyChainData/SupplyChainData.csproj",
       "msbuildProject": "../SupplyChainData/SupplyChainData.csproj"
+    },
+    "SupplyChaunMathLib/1.0.0": {
+      "type": "project",
+      "path": "../SupplyChaunMathLib/SupplyChaunMathLib.csproj",
+      "msbuildProject": "../SupplyChaunMathLib/SupplyChaunMathLib.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -2888,6 +2902,7 @@
       "Microsoft.EntityFrameworkCore.Sqlite >= 8.0.10",
       "Microsoft.EntityFrameworkCore.Tools >= 8.0.10",
       "SupplyChainData >= 1.0.0",
+      "SupplyChaunMathLib >= 1.0.0",
       "Swashbuckle.AspNetCore >= 6.4.0"
     ]
   },
@@ -2921,6 +2936,9 @@
           "projectReferences": {
             "E:\\Производственная практика\\SupplyChainAPI\\SupplyChainData\\SupplyChainData.csproj": {
               "projectPath": "E:\\Производственная практика\\SupplyChainAPI\\SupplyChainData\\SupplyChainData.csproj"
+            },
+            "E:\\Производственная практика\\SupplyChainAPI\\SupplyChaunMathLib\\SupplyChaunMathLib.csproj": {
+              "projectPath": "E:\\Производственная практика\\SupplyChainAPI\\SupplyChaunMathLib\\SupplyChaunMathLib.csproj"
             }
           }
         }

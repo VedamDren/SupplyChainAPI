@@ -10,7 +10,7 @@ namespace SupplyChainAPI.Models.SubdivisionDTO
 
         [Required]
         [RegularExpression("^(Warehouse|Production|Sales)$",
-            ErrorMessage = "Type must be either 'Warehouse', 'Production' or 'Sales'")]
+            ErrorMessage = "Должно быть 'Warehouse', 'Production' или 'Sales'")]
         public string Type { get; set; }
     }
 }

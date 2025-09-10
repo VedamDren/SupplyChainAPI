@@ -8,7 +8,7 @@ namespace SupplyChainAPI.Models.MaterialDTO
         public string Name { get; set; }
 
         [RegularExpression("^(FinishedProduct|RawMaterial)$",
-            ErrorMessage = "Type must be either 'FinishedProduct' or 'RawMaterial'")]
+            ErrorMessage = "Должно быть 'FinishedProduct' или 'RawMaterial'")]
         public string Type { get; set; }
     }
 }

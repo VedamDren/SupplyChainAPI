@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SupplyChainData\SupplyChainData.csproj" />
+    <ProjectReference Include="..\SupplyChaunMathLib\SupplyChaunMathLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>

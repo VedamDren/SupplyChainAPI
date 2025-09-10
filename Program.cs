@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SupplyChainData;
 using SupplyChainAPI.Mappings;
 using System.Globalization;
+using SupplyChainMathLib;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,10 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API для автоматизации планирования цепочек поставок"
     });
 });
+
+builder.Services.AddScoped<InventoryCalculator>();
+builder.Services.AddScoped<ProductionCalculator>();
+builder.Services.AddScoped<SupplyCalculator>();
 
 var app = builder.Build();
 

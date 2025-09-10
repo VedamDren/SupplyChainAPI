@@ -105,7 +105,7 @@ namespace SupplyChainAPI.Controllers
 
                 if (existingMaterial != null)
                 {
-                    return BadRequest("Material with this name already exists");
+                    return BadRequest("Материал с таким названием уже есть");
                 }
 
                 var material = _mapper.Map<Material>(materialCreateDto);
@@ -152,7 +152,7 @@ namespace SupplyChainAPI.Controllers
 
                     if (existingMaterial != null)
                     {
-                        return BadRequest("Another material with this name already exists");
+                        return BadRequest("Другой материал с таким названием уже существует");
                     }
                 }
 

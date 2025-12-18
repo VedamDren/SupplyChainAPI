@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using SupplyChainData;
 using SupplyChainAPI.Models.MaterialDTO;
-using SupplyChainAPI.Models.DTO;
+using SupplyChainAPI.Models;
 using SupplyChainAPI.Models.ProductionPlan;
 using SupplyChainAPI.Models.RawMaterialPurchaseDTO;
 using SupplyChainAPI.Models.RawMaterialWriteOffDTO;
@@ -39,23 +39,56 @@ namespace SupplyChainAPI.Mappings
             #endregion Материалы
 
             #region План продаж
-            // SalesPlan mappings
+            // Маппинг из сущности в DTO для отображения
             CreateMap<SalesPlan, SalesPlanResponseDto>()
-                .ForMember(dest => dest.SubdivisionName, opt => opt.MapFrom(src => src.Subdivision.Name))
-                .ForMember(dest => dest.MaterialName,opt => opt.MapFrom(src => src.Material.Name));
+                .ForMember(dest => dest.SubdivisionName,
+                    opt => opt.MapFrom(src => src.Subdivision != null ? src.Subdivision.Name : null))
+                .ForMember(dest => dest.MaterialName,
+                    opt => opt.MapFrom(src => src.Material != null ? src.Material.Name : null))
+                .ForMember(dest => dest.CreatedByUserName,
+                    opt => opt.MapFrom(src => src.CreatedByUser != null ? src.CreatedByUser.Name : null))
+                .ForMember(dest => dest.LastModifiedByUserName,
+                    opt => opt.MapFrom(src => src.LastModifiedByUser != null ? src.LastModifiedByUser.Name : null));
 
+            // Маппинг для матрицы - только основные поля
+            CreateMap<SalesPlan, SalesPlanMatrixDto>()
+                .ForMember(dest => dest.SubdivisionName,
+                    opt => opt.MapFrom(src => src.Subdivision != null ? src.Subdivision.Name : null))
+                .ForMember(dest => dest.MaterialName,
+                    opt => opt.MapFrom(src => src.Material != null ? src.Material.Name : null))
+                .ForMember(dest => dest.MonthlyPlans, opt => opt.Ignore()); // Игнорируем, заполняем вручную
+
+            // Маппинг для создания плана продаж
+            CreateMap<SalesPlanCreateDto, SalesPlan>()
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
+                .ForMember(dest => dest.LastModifiedDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
+                .ForMember(dest => dest.Id, opt => opt.Ignore()) // Игнорируем ID при создании
+                .ForMember(dest => dest.Subdivision, opt => opt.Ignore()) // Игнорируем навигационные свойства
+                .ForMember(dest => dest.Material, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedByUser, opt => opt.Ignore())
+                .ForMember(dest => dest.LastModifiedByUser, opt => opt.Ignore());
+
+            // Маппинг для обновления плана продаж
+            CreateMap<SalesPlanUpdateDto, SalesPlan>()
+                .ForMember(dest => dest.LastModifiedDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+
+            #endregion План продаж
+
+            #region План производства
             // ProductionPlan mappings
-        CreateMap<ProductionPlan, ProductionPlanResponseDto>()
-            .ForMember(dest => dest.SubdivisionName,
-                opt => opt.MapFrom(src => src.Subdivision.Name))
-            .ForMember(dest => dest.MaterialName,
-                opt => opt.MapFrom(src => src.Material.Name));
+            CreateMap<ProductionPlan, ProductionPlanResponseDto>()
+                .ForMember(dest => dest.SubdivisionName,
+                    opt => opt.MapFrom(src => src.Subdivision.Name))
+                .ForMember(dest => dest.MaterialName,
+                    opt => opt.MapFrom(src => src.Material.Name));
 
             CreateMap<ProductionPlanCreateDto, ProductionPlan>();
 
             CreateMap<ProductionPlanUpdateDto, ProductionPlan>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-            #endregion План продаж
+            #endregion План производства
 
             #region Закуп сырья
             // RawMaterialPurchase mappings
@@ -105,27 +138,19 @@ namespace SupplyChainAPI.Mappings
                 .ForMember(dest => dest.SubdivisionName,
                     opt => opt.MapFrom(src => src.Subdivision.Name))
                 .ForMember(dest => dest.MaterialName,
-                    opt => opt.MapFrom(src => src.Material.Name));
+                    opt => opt.MapFrom(src => src.Material.Name))
+                .ForMember(dest => dest.DaysCount,
+                    opt => opt.MapFrom(src => src.DaysCount)); // Добавляем маппинг DaysCount
 
-            CreateMap<RegulationCreateDto, Regulation>();
+            CreateMap<RegulationCreateDto, Regulation>()
+                .ForMember(dest => dest.DaysCount,
+                    opt => opt.MapFrom(src => src.DaysCount));
 
             CreateMap<RegulationUpdateDto, Regulation>()
+                .ForMember(dest => dest.DaysCount,
+                    opt => opt.MapFrom(src => src.DaysCount))
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
             #endregion Нормативы
-
-            #region План продаж
-            // SalesPlan mappings
-            CreateMap<SalesPlan, SalesPlanResponseDto>()
-                .ForMember(dest => dest.SubdivisionName,
-                    opt => opt.MapFrom(src => src.Subdivision.Name))
-                .ForMember(dest => dest.MaterialName,
-                    opt => opt.MapFrom(src => src.Material.Name));
-
-            CreateMap<SalesPlanCreateDto, SalesPlan>();
-
-            CreateMap<SalesPlanUpdateDto, SalesPlan>()
-                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-            #endregion План продаж
 
             #region Подразделения
             // Subdivision mappings

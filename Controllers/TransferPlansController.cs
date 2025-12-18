@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using SupplyChainData;
 using SupplyChainAPI.Models.TransferPlanDTO;
 using AutoMapper;
+using SupplyChainMathLib;
+using System.ComponentModel.DataAnnotations;
 
 namespace SupplyChainAPI.Controllers
 {
@@ -12,11 +14,13 @@ namespace SupplyChainAPI.Controllers
     {
         private readonly SupplyChainContext _context;
         private readonly IMapper _mapper;
+        private readonly InventoryCalculator _calculator;
 
         public TransferPlansController(SupplyChainContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
+            _calculator = new InventoryCalculator();
         }
 
         [HttpPost("getAll")]
@@ -80,6 +84,312 @@ namespace SupplyChainAPI.Controllers
             return CreatedAtAction(nameof(GetTransferPlan),
                 new { id = transferPlan.Id },
                 _mapper.Map<TransferPlanDto>(transferPlan));
+        }
+
+        [HttpPost("calculate-year")]
+        public async Task<ActionResult<TransferPlanCalculationResult>> CalculateYearlyTransferPlan([FromBody] YearlyCalculationRequest request)
+        {
+            try
+            {
+                // Валидация года
+                if (request.Year < 2000 || request.Year > 2100)
+                {
+                    return BadRequest("Некорректный год. Допустимый диапазон: 2000-2100");
+                }
+
+                // 1. Получить все производственные подразделения
+                var productionSubdivisions = await _context.Subdivisions
+                    .Where(s => s.Type == SubdivisionType.Production)
+                    .ToListAsync();
+
+                if (!productionSubdivisions.Any())
+                {
+                    return BadRequest("Не найдено производственных подразделений");
+                }
+
+                // 2. Получить все торговые подразделения
+                var tradingSubdivisions = await _context.Subdivisions
+                    .Where(s => s.Type == SubdivisionType.Trading)
+                    .ToListAsync();
+
+                if (!tradingSubdivisions.Any())
+                {
+                    return BadRequest("Не найдено торговых подразделений");
+                }
+
+                // 3. Получить все готовые продукты
+                var finishedProducts = await _context.Materials
+                    .Where(m => m.Type == MaterialType.FinishedProduct)
+                    .ToListAsync();
+
+                if (!finishedProducts.Any())
+                {
+                    return BadRequest("Не найдено готовой продукции");
+                }
+
+                // 4. Удалить существующие планы за этот год
+                var startDate = new DateTime(request.Year, 1, 1);
+                var endDate = new DateTime(request.Year, 12, 31);
+
+                var existingPlans = await _context.TransferPlans
+                    .Where(tp => tp.TransferDate >= startDate && tp.TransferDate <= endDate)
+                    .ToListAsync();
+
+                if (existingPlans.Any())
+                {
+                    _context.TransferPlans.RemoveRange(existingPlans);
+                    await _context.SaveChangesAsync();
+                }
+
+                var calculatedPlans = new List<TransferPlan>();
+                var calculator = new InventoryCalculator();
+
+                // Флаг использования фиксированных значений для января 2023
+                bool usedFixedJanuary2023Values = false;
+
+                // 5. Для каждой комбинации: производственное -> торговое подразделение
+                foreach (var production in productionSubdivisions)
+                {
+                    foreach (var trading in tradingSubdivisions)
+                    {
+                        // 6. Для каждой готовой продукции
+                        foreach (var product in finishedProducts)
+                        {
+                            // 7. Для каждого месяца в году
+                            for (int month = 1; month <= 12; month++)
+                            {
+                                var currentMonthDate = new DateTime(request.Year, month, 1);
+                                var nextMonthDate = month == 12
+                                    ? new DateTime(request.Year + 1, 1, 1)
+                                    : new DateTime(request.Year, month + 1, 1);
+
+                                try
+                                {
+                                    // 8. Получить план продаж на текущий месяц
+                                    var currentMonthSalesPlan = await _context.SalesPlans
+                                        .FirstOrDefaultAsync(sp =>
+                                            sp.SubdivisionId == trading.Id &&
+                                            sp.MaterialId == product.Id &&
+                                            sp.Date.Year == request.Year &&
+                                            sp.Date.Month == month);
+
+                                    // 9. Получить план продаж на следующий месяц
+                                    var nextMonthSalesPlan = await _context.SalesPlans
+                                        .FirstOrDefaultAsync(sp =>
+                                            sp.SubdivisionId == trading.Id &&
+                                            sp.MaterialId == product.Id &&
+                                            sp.Date.Year == nextMonthDate.Year &&
+                                            sp.Date.Month == nextMonthDate.Month);
+
+                                    // 10. Получить норматив обеспеченности запасом на текущий месяц
+                                    var currentMonthRegulation = await _context.Regulations
+                                        .FirstOrDefaultAsync(r =>
+                                            r.SubdivisionId == trading.Id &&
+                                            r.MaterialId == product.Id &&
+                                            r.Date.Year == request.Year &&
+                                            r.Date.Month == month);
+
+                                    // 11. Получить норматив обеспеченности запасом на следующий месяц
+                                    var nextMonthRegulation = await _context.Regulations
+                                        .FirstOrDefaultAsync(r =>
+                                            r.SubdivisionId == trading.Id &&
+                                            r.MaterialId == product.Id &&
+                                            r.Date.Year == nextMonthDate.Year &&
+                                            r.Date.Month == nextMonthDate.Month);
+
+                                    // 12. Определить план запасов на начало текущего месяца
+                                    decimal currentMonthInventory;
+
+                                    // ОСОБЕННОСТЬ: Для января 2023 года используем фиксированные значения
+                                    if (request.Year == 2023 && month == 1)
+                                    {
+                                        // Получаем фиксированные значения из InitialValues2023
+                                        currentMonthInventory = InitialValues2023.GetFixedJanuary2023Value(
+                                            trading.Name,
+                                            product.Name);
+                                        usedFixedJanuary2023Values = true;
+                                    }
+                                    else
+                                    {
+                                        // Для остальных месяцев рассчитываем по формуле: План продаж × Норматив / 30
+                                        if (currentMonthSalesPlan != null && currentMonthRegulation != null)
+                                        {
+                                            currentMonthInventory = calculator.CalculateTradingInventoryPlan(
+                                                currentMonthSalesPlan.Quantity,
+                                                currentMonthRegulation.DaysCount);
+                                        }
+                                        else
+                                        {
+                                            // Если нет данных, пропускаем расчет для этого месяца
+                                            continue;
+                                        }
+                                    }
+
+                                    // 13. Определить план запасов на начало следующего месяца
+                                    decimal nextMonthInventory;
+
+                                    if (nextMonthSalesPlan != null && nextMonthRegulation != null)
+                                    {
+                                        // Рассчитываем по формуле: План продаж следующего месяца × Норматив следующего месяца / 30
+                                        nextMonthInventory = calculator.CalculateTradingInventoryPlan(
+                                            nextMonthSalesPlan.Quantity,
+                                            nextMonthRegulation.DaysCount);
+                                    }
+                                    else
+                                    {
+                                        // Если нет данных на следующий месяц, пропускаем расчет
+                                        continue;
+                                    }
+
+                                    // 14. Получить план продаж текущего месяца
+                                    decimal currentMonthSales = currentMonthSalesPlan?.Quantity ?? 0;
+
+                                    // 15. Рассчитать план перемещений по формуле из Excel: =D8-C8+C3
+                                    // где: D8 = nextMonthInventory, C8 = currentMonthInventory, C3 = currentMonthSales
+                                    decimal transferQuantity = nextMonthInventory - currentMonthInventory + currentMonthSales;
+
+                                    // 16. Если количество положительное, создаем план перемещения
+                                    if (transferQuantity > 0)
+                                    {
+                                        var transferPlan = new TransferPlan
+                                        {
+                                            SourceSubdivisionId = production.Id,
+                                            DestinationSubdivisionId = trading.Id,
+                                            MaterialId = product.Id,
+                                            TransferDate = currentMonthDate,
+                                            Quantity = (int)Math.Ceiling(transferQuantity)
+                                        };
+
+                                        calculatedPlans.Add(transferPlan);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    // Логируем ошибку, но продолжаем расчет для других месяцев
+                                    Console.WriteLine($"Ошибка при расчете для {product.Name}, месяц {month}: {ex.Message}");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 17. Сохранить все рассчитанные планы
+                if (calculatedPlans.Any())
+                {
+                    await _context.TransferPlans.AddRangeAsync(calculatedPlans);
+                    await _context.SaveChangesAsync();
+
+                    // 18. Загрузить связанные данные для возврата
+                    var savedPlans = await _context.TransferPlans
+                        .Include(tp => tp.SourceSubdivision)
+                        .Include(tp => tp.DestinationSubdivision)
+                        .Include(tp => tp.Material)
+                        .Where(tp => tp.TransferDate.Year == request.Year)
+                        .ToListAsync();
+
+                    var result = new TransferPlanCalculationResult
+                    {
+                        Success = true,
+                        Message = $"План перемещений на {request.Year} год успешно рассчитан",
+                        CalculatedPlans = _mapper.Map<List<TransferPlanDto>>(savedPlans),
+                        Year = request.Year,
+                        PlansCount = savedPlans.Count,
+                        Details = new CalculationDetails
+                        {
+                            ProductionSubdivisionsCount = productionSubdivisions.Count,
+                            TradingSubdivisionsCount = tradingSubdivisions.Count,
+                            FinishedProductsCount = finishedProducts.Count,
+                            MonthsCalculated = 12,
+                            January2023FixedValuesUsed = usedFixedJanuary2023Values
+                        }
+                    };
+
+                    return Ok(result);
+                }
+                else
+                {
+                    return Ok(new TransferPlanCalculationResult
+                    {
+                        Success = true,
+                        Message = "Нет данных для расчета плана перемещений",
+                        Year = request.Year,
+                        PlansCount = 0,
+                        CalculatedPlans = new List<TransferPlanDto>()
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new TransferPlanCalculationResult
+                {
+                    Success = false,
+                    Message = $"Ошибка при расчете: {ex.Message}",
+                    Year = request.Year,
+                    PlansCount = 0
+                });
+            }
+        }
+
+        [HttpPost("calculate-test")]
+        public async Task<ActionResult<TransferPlanCalculationResult>> TestCalculation([FromBody] TestCalculationRequest request)
+        {
+            try
+            {
+                // Тестовый расчет для демонстрации
+                var calculator = new InventoryCalculator();
+
+                // Пример расчета для января 2023 года
+                // Для "Готовая продукция 1" в Excel: =D8-C8+C3
+                // D8 = 165 (110 * 45 / 30)
+                // C8 = 150 (фиксированное значение)
+                // C3 = 100 (план продаж)
+                // Результат: 165 - 150 + 100 = 115
+
+                var testPlans = new List<TransferPlanDto>
+                {
+                    new TransferPlanDto
+                    {
+                        Id = 1,
+                        SourceSubdivisionId = 1,
+                        SourceSubdivisionName = "Производственное подразделение 1",
+                        DestinationSubdivisionId = 2,
+                        DestinationSubdivisionName = "Торговое подразделение 1",
+                        MaterialId = 1,
+                        MaterialName = "Готовая продукция 1",
+                        TransferDate = new DateTime(request.Year, 1, 1),
+                        Quantity = 115
+                    },
+                    new TransferPlanDto
+                    {
+                        Id = 2,
+                        SourceSubdivisionId = 1,
+                        SourceSubdivisionName = "Производственное подразделение 1",
+                        DestinationSubdivisionId = 2,
+                        DestinationSubdivisionName = "Торговое подразделение 1",
+                        MaterialId = 2,
+                        MaterialName = "Готовая продукция 2",
+                        TransferDate = new DateTime(request.Year, 1, 1),
+                        Quantity = 230
+                    }
+                };
+
+                return Ok(new TransferPlanCalculationResult
+                {
+                    Success = true,
+                    Message = $"Тестовый расчет для {request.Year} года выполнен успешно",
+                    CalculatedPlans = testPlans,
+                    Year = request.Year,
+                    PlansCount = testPlans.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new TransferPlanCalculationResult
+                {
+                    Success = false,
+                    Message = $"Ошибка при тестовом расчете: {ex.Message}"
+                });
+            }
         }
 
         [HttpPut("{id}")]

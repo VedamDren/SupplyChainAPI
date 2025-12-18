@@ -1,16 +1,27 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// SalesPlanCreateDto.cs
+using System;
+using System.ComponentModel.DataAnnotations;
 
-public class SalesPlanCreateDto
+namespace SupplyChainAPI.Models.SalesPlanDTO
 {
-    [Required]
-    public int SubdivisionId { get; set; }
+    public class SalesPlanCreateDto
+    {
+        [Required(ErrorMessage = "SubdivisionId обязателен")]
+        [Range(1, int.MaxValue, ErrorMessage = "SubdivisionId должен быть положительным числом")]
+        public int SubdivisionId { get; set; }
 
-    [Required]
-    public int MaterialId { get; set; }
+        [Required(ErrorMessage = "MaterialId обязателен")]
+        [Range(1, int.MaxValue, ErrorMessage = "MaterialId должен быть положительным числом")]
+        public int MaterialId { get; set; }
 
-    [Required]
-    public DateTime Date { get; set; }
+        [Required(ErrorMessage = "Date обязателен")]
+        public DateTime Date { get; set; }
 
-    [Range(1, int.MaxValue)]
-    public int Quantity { get; set; }
+        [Required(ErrorMessage = "Quantity обязателен")]
+        [Range(0, int.MaxValue, ErrorMessage = "Quantity должен быть неотрицательным целым числом")]
+        public int Quantity { get; set; }
+
+        public int? CreatedByUserId { get; set; }
+        public string? PreparedByInfo { get; set; }
+    }
 }

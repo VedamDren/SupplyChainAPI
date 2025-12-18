@@ -86,6 +86,30 @@ namespace SupplyChainAPI.Controllers
 
             return NoContent();
         }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<SubdivisionDto>>> GetSubdivisions([FromQuery] string type)
+        {
+            try
+            {
+                var query = _context.Subdivisions.AsQueryable();
+
+                if (!string.IsNullOrEmpty(type))
+                {
+                    // Фильтруем по типу подразделения
+                    if (Enum.TryParse<SubdivisionType>(type, out var subdivisionType))
+                    {
+                        query = query.Where(s => s.Type == subdivisionType);
+                    }
+                }
+
+                var subdivisions = await query.ToListAsync();
+                return Ok(_mapper.Map<List<SubdivisionDto>>(subdivisions));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ошибка при получении подразделений: {ex.Message}");
+            }
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSubdivision(int id)

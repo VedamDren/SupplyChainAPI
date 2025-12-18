@@ -137,3 +137,11 @@ E:\Производственная практика\SupplyChainAPI\SupplyChainA
 E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\SupplyChainData.pdb
 E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\SupplyChaunMathLib.dll
 E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\SupplyChaunMathLib.pdb
+E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll

@@ -9,8 +9,8 @@ namespace SupplyChainAPI.Models.SubdivisionDTO
         public string Name { get; set; }
 
         [Required]
-        [RegularExpression("^(Warehouse|Production|Sales)$",
-            ErrorMessage = "Должно быть 'Warehouse', 'Production' или 'Sales'")]
+        [RegularExpression("^(Production|Trading)$",
+            ErrorMessage = "Должно быть Production' или 'Trading'")]
         public string Type { get; set; }
     }
 }

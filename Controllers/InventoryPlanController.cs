@@ -28,6 +28,7 @@ namespace SupplyChainAPI.Controllers
 
         // ============================================
         // 1. ОСНОВНОЙ МЕТОД РАСЧЕТА (универсальный, для обратной совместимости)
+        // Теперь включает расчет для сырья
         // ============================================
         [HttpPost("calculate")]
         [ApiExplorerSettings(IgnoreApi = true)] // Скрыть из Swagger
@@ -38,12 +39,23 @@ namespace SupplyChainAPI.Controllers
             {
                 _logger.LogWarning("Используется универсальный метод расчета. Рекомендуется использовать специализированные методы.");
 
-                // Определяем тип подразделения и вызываем соответствующий метод
+                // Получаем данные из БД для определения типа материала
                 var subdivision = await _context.Subdivisions.FindAsync(request.SubdivisionId);
+                var material = await _context.Materials.FindAsync(request.MaterialId);
+
                 if (subdivision == null)
                     return NotFound(new { message = $"Подразделение с ID {request.SubdivisionId} не найдено" });
 
-                if (subdivision.Type == SubdivisionType.Trading)
+                if (material == null)
+                    return NotFound(new { message = $"Материал с ID {request.MaterialId} не найден" });
+
+                // Определяем тип материала и подразделения, вызываем соответствующий метод
+                if (material.Type == MaterialType.RawMaterial)
+                {
+                    // Для сырья используем новый метод расчета
+                    return await CalculateRawMaterialPlan(request);
+                }
+                else if (subdivision.Type == SubdivisionType.Trading)
                 {
                     return await CalculateTradingPlan(request);
                 }
@@ -53,7 +65,7 @@ namespace SupplyChainAPI.Controllers
                 }
                 else
                 {
-                    return BadRequest(new { message = "Неподдерживаемый тип подразделения" });
+                    return BadRequest(new { message = "Неподдерживаемый тип подразделения или материала" });
                 }
             }
             catch (Exception ex)
@@ -106,28 +118,6 @@ namespace SupplyChainAPI.Controllers
 
                 // Получаем начало месяца для даты запроса
                 var monthStart = new DateTime(request.Date.Year, request.Date.Month, 1);
-
-                // Проверяем фиксированные значения для января 2023
-                if (InitialValues2023.IsJanuary2023(monthStart))
-                {
-                    var fixedValue = InitialValues2023.GetFixedJanuary2023Value(subdivision.Name, material.Name);
-                    return Ok(new InventoryCalculationResult
-                    {
-                        Date = monthStart,
-                        InventoryPlan = fixedValue,
-                        SalesPlan = 0,
-                        TransferPlan = null,
-                        StockNorm = 30,
-                        DaysInMonth = DateTime.DaysInMonth(request.Date.Year, request.Date.Month),
-                        CalculatedQuantity = fixedValue,
-                        IsFixedPlan = true,
-                        CalculationType = "Фиксированный план (январь 2023)",
-                        Formula = $"Фиксированное значение: {fixedValue}",
-                        SubdivisionName = subdivision.Name,
-                        MaterialName = material.Name,
-                        Message = $"Фиксированное значение для января 2023: {fixedValue}"
-                    });
-                }
 
                 // Получаем норматив (Regulation) для расчета
                 var regulation = await _context.Regulations
@@ -195,7 +185,7 @@ namespace SupplyChainAPI.Controllers
         }
 
         // ============================================
-        // 3. РАСЧЕТ ПЛАНА ЗАПАСОВ ДЛЯ ПРОИЗВОДСТВЕННОГО ПОДРАЗДЕЛЕНИЯ
+        // 3. РАСЧЕТ ПЛАНА ЗАПАСОВ ДЛЯ ПРОИЗВОДСТВЕННОГО ПОДРАЗДЕЛЕНИЯ (Готовая продукция)
         // Формула: (Сумма планов перемещений предыдущего месяца × Норматив текущего месяца) ÷ 30
         // ============================================
         [HttpPost("calculate-production")]
@@ -235,30 +225,19 @@ namespace SupplyChainAPI.Controllers
                     });
                 }
 
-                // Получаем начало месяца для даты запроса
-                var monthStart = new DateTime(request.Date.Year, request.Date.Month, 1);
-
-                // Проверяем фиксированные значения для января 2023
-                if (InitialValues2023.IsJanuary2023(monthStart))
+                // Проверяем тип материала - метод для готовой продукции, не для сырья
+                if (material.Type == MaterialType.RawMaterial)
                 {
-                    var fixedValue = InitialValues2023.GetFixedJanuary2023Value(subdivision.Name, material.Name);
-                    return Ok(new InventoryCalculationResult
+                    return BadRequest(new
                     {
-                        Date = monthStart,
-                        InventoryPlan = fixedValue,
-                        SalesPlan = 0,
-                        TransferPlan = null,
-                        StockNorm = 30,
-                        DaysInMonth = DateTime.DaysInMonth(request.Date.Year, request.Date.Month),
-                        CalculatedQuantity = fixedValue,
-                        IsFixedPlan = true,
-                        CalculationType = "Фиксированный план (январь 2023)",
-                        Formula = $"Фиксированное значение: {fixedValue}",
-                        SubdivisionName = subdivision.Name,
-                        MaterialName = material.Name,
-                        Message = $"Фиксированное значение для января 2023: {fixedValue}"
+                        message = "Этот метод предназначен для готовой продукции в производственных подразделениях",
+                        actualMaterialType = material.Type.ToString(),
+                        suggestion = "Для сырья используйте метод calculate-raw-material"
                     });
                 }
+
+                // Получаем начало месяца для даты запроса
+                var monthStart = new DateTime(request.Date.Year, request.Date.Month, 1);
 
                 // Получаем норматив (Regulation) для расчета ТЕКУЩЕГО месяца
                 var regulation = await _context.Regulations
@@ -277,35 +256,16 @@ namespace SupplyChainAPI.Controllers
                 var transferPlans = await _context.TransferPlans
                     .Where(tp => tp.SourceSubdivisionId == request.SubdivisionId &&
                                  tp.MaterialId == request.MaterialId &&
-                                 tp.TransferDate.Year == previousMonthStart.Year &&
-                                 tp.TransferDate.Month == previousMonthStart.Month)
-                    .ToListAsync();
-
-                // Также можно искать планы перемещений, где TransferDate в пределах предыдущего месяца
-                // Альтернативный вариант фильтрации
-                var transferPlansAlternative = await _context.TransferPlans
-                    .Where(tp => tp.SourceSubdivisionId == request.SubdivisionId &&
-                                 tp.MaterialId == request.MaterialId &&
                                  tp.TransferDate >= previousMonthStart &&
                                  tp.TransferDate < monthStart)
                     .ToListAsync();
 
-                // Используем альтернативный вариант для большей точности
-                decimal transferPlanQuantity = transferPlansAlternative.Sum(tp => tp.Quantity);
+                decimal transferPlanQuantity = transferPlans.Sum(tp => tp.Quantity);
 
                 _logger.LogInformation("Найдено {Count} планов перемещений для производственного подразделения {SubdivisionId}, материала {MaterialId}, предыдущий месяц {PreviousMonth}, норматив текущего месяца={StockNorm}",
-                    transferPlansAlternative.Count, request.SubdivisionId, request.MaterialId, previousMonthStart.ToString("yyyy-MM"), stockNorm);
+                    transferPlans.Count, request.SubdivisionId, request.MaterialId, previousMonthStart.ToString("yyyy-MM"), stockNorm);
 
-                // Проверяем, есть ли данные за предыдущий месяц
-                if (transferPlanQuantity == 0)
-                {
-                    _logger.LogWarning("Нет данных по планам перемещений за предыдущий месяц. Проверка альтернативных источников...");
-
-                    // Можно также проверить наличие данных за предыдущий месяц в других таблицах
-                    // или использовать какой-то запасной вариант расчета
-                }
-
-                // Формула для производственного подразделения: (Сумма планов перемещений предыдущего месяца × Норматив текущего месяца) ÷ 30
+                // Формула для производственного подразделения (готовая продукция): (Сумма планов перемещений предыдущего месяца × Норматив текущего месяца) ÷ 30
                 decimal calculatedValue = (transferPlanQuantity * stockNorm) / 30;
                 string formula = $"({transferPlanQuantity} (план перемещений за {previousMonthStart.ToString("MMMM yyyy")}) × {stockNorm}) ÷ 30 = {calculatedValue:F2}";
 
@@ -320,7 +280,7 @@ namespace SupplyChainAPI.Controllers
                     DaysInMonth = DateTime.DaysInMonth(request.Date.Year, request.Date.Month),
                     CalculatedQuantity = calculatedValue,
                     IsFixedPlan = false,
-                    CalculationType = "Расчет для производственного подразделения",
+                    CalculationType = "Расчет для производственного подразделения (Готовая продукция)",
                     Formula = formula,
                     SubdivisionName = subdivision.Name,
                     MaterialName = material.Name,
@@ -343,7 +303,137 @@ namespace SupplyChainAPI.Controllers
         }
 
         // ============================================
-        // 4. ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ (с небольшими улучшениями)
+        // 4. РАСЧЕТ ПЛАНА ЗАПАСОВ ПО СЫРЬЮ
+        // Формула: План списания сырья в производство × Норматив обеспеченности запасом ÷ 30
+        // ============================================
+        [HttpPost("calculate-raw-material")]
+        public async Task<ActionResult<InventoryCalculationResult>> CalculateRawMaterialPlan(
+            [FromBody] InventoryCalculationRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("РАСЧЕТ ДЛЯ СЫРЬЯ: SubdivisionId={SubdivisionId}, MaterialId={MaterialId}, Date={Date}",
+                    request.SubdivisionId, request.MaterialId, request.Date);
+
+                // Валидация
+                if (request == null)
+                    return BadRequest(new { message = "Запрос не может быть пустым" });
+
+                if (request.Date == default)
+                    return BadRequest(new { message = "Дата обязательна" });
+
+                // Получаем данные из БД
+                var subdivision = await _context.Subdivisions.FindAsync(request.SubdivisionId);
+                var material = await _context.Materials.FindAsync(request.MaterialId);
+
+                if (subdivision == null)
+                    return NotFound(new { message = $"Подразделение с ID {request.SubdivisionId} не найдено" });
+
+                if (material == null)
+                    return NotFound(new { message = $"Материал с ID {request.MaterialId} не найден" });
+
+                // Проверяем, что материал действительно является сырьем
+                if (material.Type != MaterialType.RawMaterial)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Этот метод предназначен только для сырья",
+                        actualMaterialType = material.Type.ToString(),
+                        suggestion = "Используйте соответствующий метод для данного типа материала"
+                    });
+                }
+
+                // Получаем начало месяца для даты запроса
+                var monthStart = new DateTime(request.Date.Year, request.Date.Month, 1);
+
+                // Получаем норматив (Regulation) для расчета
+                var regulation = await _context.Regulations
+                    .FirstOrDefaultAsync(r => r.SubdivisionId == request.SubdivisionId &&
+                                              r.MaterialId == request.MaterialId &&
+                                              r.Date.Year == monthStart.Year &&
+                                              r.Date.Month == monthStart.Month);
+
+                decimal stockNorm = regulation?.DaysCount ?? 30;
+
+                // Ищем план списания сырья в производство для ТЕКУЩЕГО месяца
+                // Используем RawMaterialWriteOff, где IsCalculated = true (расчетные списания)
+                var rawMaterialWriteOff = await _context.RawMaterialWriteOffs
+                    .Where(w => w.SubdivisionId == request.SubdivisionId &&
+                                w.RawMaterialId == request.MaterialId &&
+                                w.WriteOffDate.Year == monthStart.Year &&
+                                w.WriteOffDate.Month == monthStart.Month &&
+                                w.IsCalculated == true) // Используем расчетные списания
+                    .SumAsync(w => w.Quantity);
+
+                _logger.LogInformation("План списания сырья для SubdivisionId={SubdivisionId}, MaterialId={MaterialId}, Month={Month}: {WriteOffQuantity}",
+                    request.SubdivisionId, request.MaterialId, monthStart.ToString("yyyy-MM"), rawMaterialWriteOff);
+
+                // Если план списания не найден, ищем в предыдущем месяце
+                if (rawMaterialWriteOff == 0)
+                {
+                    var previousMonthStart = monthStart.AddMonths(-1);
+                    rawMaterialWriteOff = await _context.RawMaterialWriteOffs
+                        .Where(w => w.SubdivisionId == request.SubdivisionId &&
+                                    w.RawMaterialId == request.MaterialId &&
+                                    w.WriteOffDate.Year == previousMonthStart.Year &&
+                                    w.WriteOffDate.Month == previousMonthStart.Month &&
+                                    w.IsCalculated == true)
+                        .SumAsync(w => w.Quantity);
+
+                    _logger.LogInformation("Попытка использовать данные предыдущего месяца {PreviousMonth}: {WriteOffQuantity}",
+                        previousMonthStart.ToString("yyyy-MM"), rawMaterialWriteOff);
+                }
+
+                // Если все еще нет данных, возвращаем ошибку
+                if (rawMaterialWriteOff == 0)
+                {
+                    return NotFound(new
+                    {
+                        message = "Не найден план списания сырья для расчета",
+                        details = $"Подразделение: {subdivision.Name}, Материал (сырье): {material.Name}, Месяц: {monthStart.ToString("MMMM yyyy")}",
+                        suggestion = "Сначала создайте план списания сырья для выбранных параметров или проверьте данные за предыдущий месяц"
+                    });
+                }
+
+                // Формула для сырья: (План списания сырья × Норматив обеспеченности запасом) ÷ 30
+                decimal calculatedValue = (rawMaterialWriteOff * stockNorm) / 30;
+                string formula = $"({rawMaterialWriteOff} (план списания сырья) × {stockNorm} (норматив)) ÷ 30 = {calculatedValue:F2}";
+
+                // Формируем результат
+                var result = new InventoryCalculationResult
+                {
+                    Date = monthStart,
+                    InventoryPlan = calculatedValue,
+                    SalesPlan = 0, // Для сырья план продаж не используется
+                    TransferPlan = rawMaterialWriteOff, // Возвращаем план списания сырья для информации
+                    StockNorm = stockNorm,
+                    DaysInMonth = DateTime.DaysInMonth(request.Date.Year, request.Date.Month),
+                    CalculatedQuantity = calculatedValue,
+                    IsFixedPlan = false,
+                    CalculationType = "Расчет плана запасов по сырью",
+                    Formula = formula,
+                    SubdivisionName = subdivision.Name,
+                    MaterialName = material.Name,
+                    Message = $"Расчет выполнен по формуле: {formula}. Использованы данные плана списания сырья."
+                };
+
+                _logger.LogInformation("Расчет плана запасов по сырью выполнен: {Formula}", formula);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при расчете плана запасов по сырью");
+                return StatusCode(500, new
+                {
+                    message = "Ошибка сервера при расчете плана запасов по сырью",
+                    error = ex.Message,
+                    details = ex.StackTrace
+                });
+            }
+        }
+
+        // ============================================
+        // 5. ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
         // ============================================
 
         [HttpGet("ping")]
@@ -352,7 +442,12 @@ namespace SupplyChainAPI.Controllers
             return Ok(new
             {
                 message = "InventoryPlansController доступен",
-                timestamp = DateTime.Now
+                timestamp = DateTime.Now,
+                endpoints = new[] {
+                    "POST /api/InventoryPlans/calculate-trading (расчет для торговых подразделений)",
+                    "POST /api/InventoryPlans/calculate-production (расчет для производственных подразделений - готовая продукция)",
+                    "POST /api/InventoryPlans/calculate-raw-material (расчет для сырья - единственный правильный метод)"
+                }
             });
         }
 

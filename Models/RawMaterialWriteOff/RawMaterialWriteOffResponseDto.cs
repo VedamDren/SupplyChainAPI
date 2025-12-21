@@ -1,4 +1,4 @@
-﻿namespace SupplyChainAPI.Models.RawMaterialWriteOffDTO
+﻿namespace SupplyChainAPI.Models.RawMaterialWriteOff
 {
     public class RawMaterialWriteOffResponseDto
     {
@@ -9,5 +9,9 @@
         public string RawMaterialName { get; set; }
         public DateTime WriteOffDate { get; set; }
         public int Quantity { get; set; }
+
+        // Новые поля
+        public bool IsCalculated { get; set; }
+        public string CalculationNote { get; set; }
     }
 }

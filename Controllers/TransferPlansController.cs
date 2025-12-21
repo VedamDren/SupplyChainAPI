@@ -144,9 +144,6 @@ namespace SupplyChainAPI.Controllers
                 var calculatedPlans = new List<TransferPlan>();
                 var calculator = new InventoryCalculator();
 
-                // Флаг использования фиксированных значений для января 2023
-                bool usedFixedJanuary2023Values = false;
-
                 // 5. Для каждой комбинации: производственное -> торговое подразделение
                 foreach (var production in productionSubdivisions)
                 {
@@ -197,26 +194,30 @@ namespace SupplyChainAPI.Controllers
                                             r.Date.Year == nextMonthDate.Year &&
                                             r.Date.Month == nextMonthDate.Month);
 
-                                    // 12. Определить план запасов на начало текущего месяца
+                                    // 12. Получить план запасов на начало текущего месяца из базы
+                                    var currentMonthInventoryPlan = await _context.InventoryPlans
+                                        .FirstOrDefaultAsync(ip =>
+                                            ip.SubdivisionId == trading.Id &&
+                                            ip.MaterialId == product.Id &&
+                                            ip.Date == currentMonthDate);
+
                                     decimal currentMonthInventory;
 
-                                    // ОСОБЕННОСТЬ: Для января 2023 года используем фиксированные значения
-                                    if (request.Year == 2023 && month == 1)
+                                    // Если в базе есть план запасов на начало месяца, используем его
+                                    if (currentMonthInventoryPlan != null)
                                     {
-                                        // Получаем фиксированные значения из InitialValues2023
-                                        currentMonthInventory = InitialValues2023.GetFixedJanuary2023Value(
-                                            trading.Name,
-                                            product.Name);
-                                        usedFixedJanuary2023Values = true;
+                                        currentMonthInventory = currentMonthInventoryPlan.Quantity;
+                                        Console.WriteLine($"Для {product.Name}, месяц {month}: используется план запасов из базы = {currentMonthInventory}");
                                     }
                                     else
                                     {
-                                        // Для остальных месяцев рассчитываем по формуле: План продаж × Норматив / 30
+                                        // Если нет плана в базе, рассчитываем по формуле
                                         if (currentMonthSalesPlan != null && currentMonthRegulation != null)
                                         {
                                             currentMonthInventory = calculator.CalculateTradingInventoryPlan(
                                                 currentMonthSalesPlan.Quantity,
                                                 currentMonthRegulation.DaysCount);
+                                            Console.WriteLine($"Для {product.Name}, месяц {month}: рассчитан план запасов = {currentMonthInventory}");
                                         }
                                         else
                                         {
@@ -234,6 +235,7 @@ namespace SupplyChainAPI.Controllers
                                         nextMonthInventory = calculator.CalculateTradingInventoryPlan(
                                             nextMonthSalesPlan.Quantity,
                                             nextMonthRegulation.DaysCount);
+                                        Console.WriteLine($"Для {product.Name}, месяц {month + 1}: рассчитан план запасов = {nextMonthInventory}");
                                     }
                                     else
                                     {
@@ -248,6 +250,12 @@ namespace SupplyChainAPI.Controllers
                                     // где: D8 = nextMonthInventory, C8 = currentMonthInventory, C3 = currentMonthSales
                                     decimal transferQuantity = nextMonthInventory - currentMonthInventory + currentMonthSales;
 
+                                    Console.WriteLine($"Расчет для {product.Name}, месяц {month}:");
+                                    Console.WriteLine($"  nextMonthInventory (D8) = {nextMonthInventory}");
+                                    Console.WriteLine($"  currentMonthInventory (C8) = {currentMonthInventory}");
+                                    Console.WriteLine($"  currentMonthSales (C3) = {currentMonthSales}");
+                                    Console.WriteLine($"  transferQuantity (D8-C8+C3) = {transferQuantity}");
+
                                     // 16. Если количество положительное, создаем план перемещения
                                     if (transferQuantity > 0)
                                     {
@@ -261,6 +269,11 @@ namespace SupplyChainAPI.Controllers
                                         };
 
                                         calculatedPlans.Add(transferPlan);
+                                        Console.WriteLine($"Создан план перемещений: {transferQuantity} -> {Math.Ceiling(transferQuantity)}");
+                                    }
+                                    else if (transferQuantity <= 0)
+                                    {
+                                        Console.WriteLine($"План перемещений не создан: transferQuantity = {transferQuantity} <= 0");
                                     }
                                 }
                                 catch (Exception ex)
@@ -299,8 +312,7 @@ namespace SupplyChainAPI.Controllers
                             ProductionSubdivisionsCount = productionSubdivisions.Count,
                             TradingSubdivisionsCount = tradingSubdivisions.Count,
                             FinishedProductsCount = finishedProducts.Count,
-                            MonthsCalculated = 12,
-                            January2023FixedValuesUsed = usedFixedJanuary2023Values
+                            MonthsCalculated = 12
                         }
                     };
 

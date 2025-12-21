@@ -4,7 +4,7 @@ using SupplyChainAPI.Models.MaterialDTO;
 using SupplyChainAPI.Models;
 using SupplyChainAPI.Models.ProductionPlan;
 using SupplyChainAPI.Models.RawMaterialPurchaseDTO;
-using SupplyChainAPI.Models.RawMaterialWriteOffDTO;
+using SupplyChainAPI.Models.RawMaterialWriteOff;
 using SupplyChainAPI.Models.InventoryPlan;
 using SupplyChainAPI.Models.Regulation;
 using SupplyChainAPI.Models.SalesPlanDTO;
@@ -12,6 +12,7 @@ using SupplyChainAPI.Models.SubdivisionDTO;
 using SupplyChainAPI.Models.SupplySourceDTO;
 using SupplyChainAPI.Models.TechnologicalCardDTO;
 using SupplyChainAPI.Models.TransferPlanDTO;
+using SupplyChainAPI.Models.ProductionCalculation;
 
 namespace SupplyChainAPI.Mappings
 {
@@ -88,6 +89,24 @@ namespace SupplyChainAPI.Mappings
 
             CreateMap<ProductionPlanUpdateDto, ProductionPlan>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // Маппинги для сохранения расчетных данных
+            CreateMap<ProductionCalculationResult, ProductionPlan>()
+                .ForMember(dest => dest.Quantity,
+                    opt => opt.MapFrom(src => (int)Math.Round(src.ProductionPlan)))
+                .ForMember(dest => dest.Date,
+                    opt => opt.MapFrom(src => new DateTime(src.Date.Year, src.Date.Month, 1)))
+                .ForMember(dest => dest.SubdivisionId, opt => opt.Ignore())
+                .ForMember(dest => dest.MaterialId, opt => opt.Ignore())
+                .ForMember(dest => dest.Subdivision, opt => opt.Ignore())
+                .ForMember(dest => dest.Material, opt => opt.Ignore());
+
+            CreateMap<ProductionPlan, ProductionCalculationResult>()
+                .ForMember(dest => dest.ProductionPlan,
+                    opt => opt.MapFrom(src => (decimal)src.Quantity))
+                .ForMember(dest => dest.CurrentInventory, opt => opt.Ignore())
+                .ForMember(dest => dest.PreviousInventory, opt => opt.Ignore())
+                .ForMember(dest => dest.TransferQuantity, opt => opt.Ignore());
             #endregion План производства
 
             #region Закуп сырья
@@ -102,6 +121,7 @@ namespace SupplyChainAPI.Mappings
 
             CreateMap<RawMaterialPurchaseUpdateDto, RawMaterialPurchase>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
             #endregion Закуп сырья
 
             #region Списание сырья
@@ -110,7 +130,11 @@ namespace SupplyChainAPI.Mappings
                 .ForMember(dest => dest.SubdivisionName,
                     opt => opt.MapFrom(src => src.Subdivision.Name))
                 .ForMember(dest => dest.RawMaterialName,
-                    opt => opt.MapFrom(src => src.RawMaterial.Name));
+                    opt => opt.MapFrom(src => src.RawMaterial.Name))
+                .ForMember(dest => dest.IsCalculated,
+                    opt => opt.MapFrom(src => src.IsCalculated))
+                .ForMember(dest => dest.CalculationNote,
+                    opt => opt.MapFrom(src => src.CalculationNote));
 
             CreateMap<RawMaterialWriteOffCreateDto, RawMaterialWriteOff>();
 

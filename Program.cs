@@ -173,6 +173,7 @@ builder.Services.AddScoped<InventoryCalculator>();
 builder.Services.AddScoped<ProductionCalculator>();
 builder.Services.AddScoped<SupplyCalculator>();
 builder.Services.AddScoped<InventoryCalculatorService>();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
 
 var app = builder.Build();
 

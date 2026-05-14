@@ -145,3 +145,4 @@ E:\Производственная практика\SupplyChainAPI\SupplyChainA
 E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
 E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+E:\Производственная практика\SupplyChainAPI\SupplyChainAPI\bin\Debug\net8.0\BCrypt-Net-Next.dll

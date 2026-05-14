@@ -37,7 +37,7 @@ namespace SupplyChainAPI.Controllers
         {
             try
             {
-                _logger.LogWarning("Используется универсальный метод расчета. Рекомендуется использовать специализированные методы.");
+                _logger.LogWarning("Используется универсальный метод расчета");
 
                 // Получаем данные из БД для определения типа материала
                 var subdivision = await _context.Subdivisions.FindAsync(request.SubdivisionId);
